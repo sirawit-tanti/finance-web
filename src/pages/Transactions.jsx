@@ -10,6 +10,11 @@ import {
 import { getCategories } from "../services/categoryService";
 import Layout from "../components/Layout";
 import { formatCurrency } from "../utils/format";
+import { Search, Download } from "lucide-react";
+import CardHeader from "../components/CardHeader";
+import FilterToolbar from "../components/FilterToolbar";
+import Pagination from "../components/Pagination";
+import { getPaginationMeta } from "../utils/pagination";
 
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
@@ -22,23 +27,24 @@ function Transactions() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("");
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [meta, setMeta] = useState(null);
 
   useEffect(() => {
     loadTransactions();
     loadCategories();
-  }, [page]);
+  }, [page, search, filterType, perPage]);
 
   async function loadTransactions() {
     try {
       const data = await getTransactions({
-        search: search,
+        search,
         type: filterType,
-        page: page,
-        per_page: 10,
+        page,
+        per_page: perPage,
       });
       setTransactions(data.data);
-      setMeta(data.meta);
+      setMeta(getPaginationMeta(data));
     } catch (error) {
       console.log(error.response?.data);
     }
@@ -110,7 +116,6 @@ function Transactions() {
       const link = document.createElement("a");
       link.href = url;
       link.download = "transations.csv";
-
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -127,9 +132,9 @@ function Transactions() {
       subtitle="Add, edit and manage your transactions"
     >
       {/* Form card */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div className="section-title">
-          {editingId ? "✎ Edit Transaction" : "+ New Transaction"}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="section-title" style={{ marginBottom: 16 }}>
+          {editingId ? "Edit Transaction" : "New Transaction"}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -196,7 +201,7 @@ function Transactions() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
             <button type="submit" className="btn btn-primary">
               {editingId ? "Update" : "Save Transaction"}
             </button>
@@ -213,45 +218,55 @@ function Transactions() {
         </form>
       </div>
 
-      <div className="flex gap-3 mb-4">
-        <input
-          type="text"
-          placeholder="Search title..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-        >
-          <option value="">All Type</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-
-        <button
-          onClick={() => {
-            setPage(1);
-            loadTransactions();
-          }}
-        >
-          Search
-        </button>
-        <button
-          onClick={handleExportCsv}
-          className="rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-700"
-        >
-          Export CSV
-        </button>
-      </div>
-
       {/* Table card */}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ padding: "20px 24px 0" }}>
-          <div className="section-title">Transactions</div>
-        </div>
+        <CardHeader title="All Transactions">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleExportCsv}
+          >
+            Export CSV
+          </button>
+        </CardHeader>
 
+        <FilterToolbar>
+          <select
+            className="form-select"
+            value={filterType}
+            onChange={(e) => {
+              setFilterType(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">All types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+
+          <input
+            className="form-input"
+            type="text"
+            placeholder="Search by title..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              setSearch("");
+              setFilterType("");
+              setPage(1);
+            }}
+          >
+            Clear
+          </button>
+        </FilterToolbar>
         {transactions.length === 0 ? (
           <div className="empty-state">
             No transactions yet — add one above.
@@ -276,8 +291,13 @@ function Transactions() {
                       style={{
                         fontVariantNumeric: "tabular-nums",
                         fontWeight: 600,
+                        color:
+                          t.type === "income"
+                            ? "var(--income-color)"
+                            : "var(--expense-color)",
                       }}
                     >
+                      {t.type === "income" ? "+" : "−"}
                       {formatCurrency(t.amount)}
                     </td>
                     <td>
@@ -313,24 +333,16 @@ function Transactions() {
         )}
       </div>
 
-      {meta && (
-        <div className="flex gap-3 mt-4">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-
-          <span>
-            Page {meta.current_page} of {meta.last_page}
-          </span>
-
-          <button
-            disabled={page >= meta.last_page}
-            onClick={() => setPage(page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        meta={meta}
+        page={page}
+        perPage={perPage}
+        onPageChange={setPage}
+        onPerPageChange={(value) => {
+          setPerPage(value);
+          setPage(1);
+        }}
+      />
     </Layout>
   );
 }

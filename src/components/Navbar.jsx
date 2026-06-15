@@ -10,6 +10,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  LockKeyhole,
 } from "lucide-react";
 
 function Navbar() {
@@ -28,33 +29,28 @@ function Navbar() {
   }
 
   const navItems = [
-    { to: "/profile", label: "Profile", icon: User },
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
     { to: "/activity-logs", label: "Activity Logs", icon: History },
+    { to: "/profile", label: "Profile", icon: User },
+    { to: "/change-password", label: "Change Password", icon: LockKeyhole },
   ];
 
   if (user?.role === "admin") {
-    navItems.push({
-      to: "/admin/users",
-      label: "User Management",
-      icon: Users,
-    });
+    navItems.push({ to: "/admin/users", label: "Users", icon: Users });
   }
 
   return (
     <nav className="sidebar-nav">
+      <div className="sidebar-section-label">Menu</div>
       {navItems.map((item) => {
         const Icon = item.icon;
-
+        const isActive = location.pathname === item.to;
         return (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={location.pathname === item.to ? "active" : ""}
-          >
-            <Icon size={18} strokeWidth={2} />
-
+          <Link key={item.to} to={item.to} className={isActive ? "active" : ""}>
+            <span className="nav-icon">
+              <Icon size={16} strokeWidth={isActive ? 2.2 : 1.8} />
+            </span>
             {item.label}
           </Link>
         );
@@ -62,20 +58,24 @@ function Navbar() {
 
       <div style={{ flex: 1 }} />
 
-      <button className="theme-toggle" onClick={toggle}>
-        {dark ? <Sun size={18} /> : <Moon size={18} />}
-        <span>{dark ? "Light mode" : "Dark mode"}</span>
-        <div style={{ marginLeft: "auto" }}>
+      <div className="sidebar-footer">
+        <button className="theme-toggle" onClick={toggle}>
+          <span className="nav-icon">
+            {dark ? <Sun size={15} /> : <Moon size={15} />}
+          </span>
+          <span>{dark ? "Light mode" : "Dark mode"}</span>
           <div className={`toggle-pill ${dark ? "active" : ""}`}>
             <div className="toggle-thumb" />
           </div>
-        </div>
-      </button>
+        </button>
 
-      <button className="sidebar-nav-btn danger" onClick={handleLogout}>
-        <span style={{ fontSize: 15, width: 18, textAlign: "center" }}>⏻</span>
-        Logout
-      </button>
+        <button className="sidebar-nav-btn danger" onClick={handleLogout}>
+          <span className="nav-icon">
+            <LogOut size={15} />
+          </span>
+          Sign out
+        </button>
+      </div>
     </nav>
   );
 }

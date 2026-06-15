@@ -14,7 +14,7 @@ function AdminRoute({ children }) {
   }, []);
 
   if (redirect) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/403" replace />;
   }
 
   return children;

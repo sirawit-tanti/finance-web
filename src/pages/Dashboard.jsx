@@ -18,23 +18,26 @@ import {
   CartesianGrid,
 } from "recharts";
 import { formatCurrency } from "../utils/format";
+import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [monthly, setMonthly] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const [period, setPeriod] = useState("month");
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [period]);
 
   async function loadDashboard() {
     try {
-      const data = await getDashboard();
-      const monthlyData = await getMonthlyDashboard();
-      const recentData = await getRecentTransactions();
+      const data = await getDashboard({ period });
+      const monthlyData = await getMonthlyDashboard({ period });
+      const recentData = await getRecentTransactions({ period });
 
       setDashboard(data);
+      console.log(monthlyData);
       setMonthly(monthlyData);
       setRecentTransactions(recentData.data);
     } catch (error) {
@@ -45,15 +48,13 @@ function Dashboard() {
 
   if (!dashboard) {
     return (
-      <Layout
-        title="Dashboard"
-        subtitle="Overview of your income, expense and balance"
-      >
+      <Layout title="Dashboard" subtitle="Overview of your finances">
         <div
           style={{
             color: "var(--text-muted)",
-            padding: "48px 0",
+            padding: "64px 0",
             textAlign: "center",
+            fontSize: 13,
           }}
         >
           Loading…
@@ -63,111 +64,249 @@ function Dashboard() {
   }
 
   const chartData = [
-    {
-      name: "Income",
-      value: Number(formatCurrency(dashboard.income) || 0),
-    },
-    {
-      name: "Expense",
-      value: Number(formatCurrency(dashboard.expense) || 0),
-    },
+    { name: "Income", value: Number(dashboard.income || 0) },
+    { name: "Expense", value: Number(dashboard.expense || 0) },
   ];
+
+  const hasChartData = chartData.some((item) => item.value > 0);
+
+  const CHART_COLORS = {
+    income: "#16a34a",
+    expense: "#dc2626",
+    grid: "var(--border)",
+    text: "var(--text-muted)",
+  };
+
+  const tooltipStyle = {
+    background: "var(--bg-surface)",
+    border: "1px solid var(--border)",
+    borderRadius: 8,
+    fontSize: 12,
+    color: "var(--text-primary)",
+    boxShadow: "var(--shadow-md)",
+  };
 
   return (
     <Layout
       title="Dashboard"
-      subtitle="Overview of your income, expense and balance"
+      subtitle="Overview of your income, expenses and balance"
     >
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div className="section-title" style={{ marginBottom: 4 }}>
+              Dashboard Period
+            </div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>
+              Filter dashboard summary by date range
+            </div>
+          </div>
+
+          <select
+            className="form-select"
+            style={{ maxWidth: 220 }}
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+          >
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+      </div>
+      {/* Stat cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon income">💚</div>
-          <div className="stat-label">Total Income</div>
+          <div className="stat-header">
+            <span className="stat-label">Total Income</span>
+            <div className="stat-icon income">
+              <TrendingUp size={16} />
+            </div>
+          </div>
           <div className="stat-value income">
             {formatCurrency(dashboard.income)}
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon expense">💛</div>
-          <div className="stat-label">Total Expense</div>
+          <div className="stat-header">
+            <span className="stat-label">Total Expenses</span>
+            <div className="stat-icon expense">
+              <TrendingDown size={16} />
+            </div>
+          </div>
           <div className="stat-value expense">
             {formatCurrency(dashboard.expense)}
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon balance">💜</div>
-          <div className="stat-label">Net Balance</div>
+          <div className="stat-header">
+            <span className="stat-label">Net Balance</span>
+            <div className="stat-icon balance">
+              <Wallet size={16} />
+            </div>
+          </div>
           <div className="stat-value balance">
             {formatCurrency(dashboard.balance)}
           </div>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-bold">Income vs Expense</h2>
-
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={120}
-                  label
-                >
-                  <Cell fill="#22c55e" />
-                  <Cell fill="#f59e0b" />
-                </Pie>
-
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+      {/* Charts */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 2fr",
+          gap: 14,
+          marginBottom: 14,
+        }}
+      >
+        <div className="chart-card">
+          <h2>Income vs Expenses</h2>
+          <div style={{ height: 240 }}>
+            {hasChartData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={90}
+                    innerRadius={48}
+                    paddingAngle={3}
+                  >
+                    <Cell fill={CHART_COLORS.income} />
+                    <Cell fill={CHART_COLORS.expense} />
+                  </Pie>
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="empty-state">
+                No income or expense data for this period.
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              justifyContent: "center",
+              marginTop: 8,
+            }}
+          >
+            {chartData.map((d, i) => (
+              <div
+                key={d.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background:
+                      i === 0 ? CHART_COLORS.income : CHART_COLORS.expense,
+                    flexShrink: 0,
+                  }}
+                />
+                {d.name}
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-bold">Monthly Income / Expense</h2>
-
-          <div className="h-80">
+        <div className="chart-card">
+          <h2>Monthly Overview</h2>
+          <div style={{ height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-
-                <Bar dataKey="income" fill="#22c55e" />
-                <Bar dataKey="expense" fill="#f59e0b" />
+              <BarChart data={monthly} barSize={10} barGap={4}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={CHART_COLORS.grid}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11, fill: CHART_COLORS.text }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: CHART_COLORS.text }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
+                />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  cursor={{ fill: "var(--bg-surface-hover)" }}
+                />
+                <Bar
+                  dataKey="income"
+                  fill={CHART_COLORS.income}
+                  radius={[4, 4, 0, 0]}
+                  name="Income"
+                />
+                <Bar
+                  dataKey="expense"
+                  fill={CHART_COLORS.expense}
+                  radius={[4, 4, 0, 0]}
+                  name="Expense"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-bold">Recent Transactions</h2>
-
-        <div className="space-y-3">
-          {recentTransactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              className="flex items-center justify-between rounded-2xl bg-slate-50 p-4"
-            >
-              <div>
-                <p className="font-semibold">{transaction.title}</p>
-
-                <p className="text-sm text-slate-500">
-                  {transaction.category?.name}
-                </p>
+      {/* Recent Transactions */}
+      <div className="card">
+        <div className="section-title">Recent Transactions</div>
+        {recentTransactions.length === 0 ? (
+          <div className="empty-state">No recent transactions.</div>
+        ) : (
+          <div>
+            {recentTransactions.map((transaction) => (
+              <div key={transaction.id} className="recent-txn-row">
+                <div>
+                  <div className="recent-txn-title">{transaction.title}</div>
+                  <div className="recent-txn-cat">
+                    {transaction.category?.name}
+                  </div>
+                </div>
+                <div
+                  className="recent-txn-amount"
+                  style={{
+                    color:
+                      transaction.type === "income"
+                        ? "var(--income-color)"
+                        : "var(--expense-color)",
+                  }}
+                >
+                  {transaction.type === "income" ? "+" : "−"}
+                  {formatCurrency(transaction.amount)}
+                </div>
               </div>
-
-              <p>{formatCurrency(transaction.amount)}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </Layout>
   );

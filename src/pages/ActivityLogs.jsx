@@ -1,16 +1,26 @@
 import Layout from "../components/Layout";
 import { useEffect, useState } from "react";
-import { getActivityLogs } from "../services/activityLogService";
+import {
+  getActivityLogs,
+  exportActivityLogs,
+} from "../services/activityLogService";
+import toast from "react-hot-toast";
+import CardHeader from "../components/CardHeader";
+import Pagination from "../components/Pagination";
+import { getPaginationMeta } from "../utils/pagination";
 
-const ACTION_COLORS = {
-  create: { bg: "rgba(16,185,129,0.1)", color: "#10b981" },
-  update: { bg: "rgba(99,102,241,0.1)", color: "#6366f1" },
-  delete: { bg: "rgba(239,68,68,0.1)", color: "#ef4444" },
+const ACTION_STYLES = {
+  create: { bg: "rgba(22,163,74,0.09)", color: "#16a34a" },
+  created: { bg: "rgba(22,163,74,0.09)", color: "#16a34a" },
+  update: { bg: "rgba(91,94,244,0.09)", color: "#5b5ef4" },
+  updated: { bg: "rgba(91,94,244,0.09)", color: "#5b5ef4" },
+  delete: { bg: "rgba(220,38,38,0.09)", color: "#dc2626" },
+  deleted: { bg: "rgba(220,38,38,0.09)", color: "#dc2626" },
 };
 
 function ActionBadge({ action }) {
-  const style = ACTION_COLORS[action?.toLowerCase()] || {
-    bg: "var(--bg-surface-hover)",
+  const style = ACTION_STYLES[action?.toLowerCase()] ?? {
+    bg: "var(--bg-surface-2)",
     color: "var(--text-secondary)",
   };
   return (
@@ -18,12 +28,10 @@ function ActionBadge({ action }) {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        padding: "3px 10px",
+        padding: "2px 8px",
         borderRadius: 20,
         fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: "0.3px",
-        textTransform: "uppercase",
+        fontWeight: 600,
         background: style.bg,
         color: style.color,
       }}
@@ -36,14 +44,19 @@ function ActionBadge({ action }) {
 function ActivityLogs() {
   const [logs, setLogs] = useState([]);
 
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [meta, setMeta] = useState(null);
+
   useEffect(() => {
     loadActivityLogs();
-  }, []);
+  }, [page, perPage]);
 
   async function loadActivityLogs() {
     try {
-      const data = await getActivityLogs();
+      const data = await getActivityLogs({ page, per_page: perPage });
       setLogs(data.data);
+      setMeta(getPaginationMeta(data));
     } catch (error) {
       console.log(error.response?.data);
       alert("Load activity logs failed");
@@ -52,19 +65,16 @@ function ActivityLogs() {
 
   function renderLogDetails(log) {
     const properties = log.properties;
-
-    if (!properties) {
-      return "-";
-    }
+    if (!properties)
+      return <span style={{ color: "var(--text-muted)" }}>�</span>;
 
     if (log.action === "updated") {
       return (
-        <div style={{ fontSize: 13 }}>
+        <div className="log-details">
           <div>
             <strong>Before:</strong> {properties.before?.title} /{" "}
             {properties.before?.amount} / {properties.before?.type}
           </div>
-
           <div>
             <strong>After:</strong> {properties.after?.title} /{" "}
             {properties.after?.amount} / {properties.after?.type}
@@ -74,15 +84,13 @@ function ActivityLogs() {
     }
 
     return (
-      <div style={{ fontSize: 13 }}>
+      <div className="log-details">
         <div>
           <strong>Title:</strong> {properties.title}
         </div>
-
         <div>
           <strong>Amount:</strong> {properties.amount}
         </div>
-
         <div>
           <strong>Type:</strong> {properties.type}
         </div>
@@ -90,12 +98,41 @@ function ActivityLogs() {
     );
   }
 
+  async function handleExportActivityLogsCsv() {
+    try {
+      const blob = await exportActivityLogs();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "activity_logs.csv";
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Export activity logs success");
+    } catch (error) {
+      console.log(error.response?.data);
+      toast.error("Export activity logs failed");
+    }
+  }
+
   return (
     <Layout title="Activity Logs" subtitle="Audit trail of all changes">
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ padding: "20px 24px 0" }}>
-          <div className="section-title">Recent Activity</div>
-        </div>
+        <CardHeader title="Recent Activity">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleExportActivityLogsCsv}
+          >
+            Export CSV
+          </button>
+        </CardHeader>
 
         {logs.length === 0 ? (
           <div className="empty-state">No activity logs found.</div>
@@ -119,6 +156,7 @@ function ActivityLogs() {
                       style={{
                         color: "var(--text-muted)",
                         fontVariantNumeric: "tabular-nums",
+                        fontSize: 12,
                       }}
                     >
                       {log.id}
@@ -128,7 +166,11 @@ function ActivityLogs() {
                     </td>
                     <td style={{ fontWeight: 500 }}>{log.model}</td>
                     <td
-                      style={{ color: "var(--text-secondary)", maxWidth: 280 }}
+                      style={{
+                        color: "var(--text-secondary)",
+                        maxWidth: 260,
+                        fontSize: 12.5,
+                      }}
                     >
                       {log.description}
                     </td>
@@ -136,7 +178,7 @@ function ActivityLogs() {
                     <td
                       style={{
                         color: "var(--text-muted)",
-                        fontSize: 13,
+                        fontSize: 12,
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -149,6 +191,16 @@ function ActivityLogs() {
           </div>
         )}
       </div>
+      <Pagination
+        meta={meta}
+        page={page}
+        perPage={perPage}
+        onPageChange={setPage}
+        onPerPageChange={(value) => {
+          setPerPage(value);
+          setPage(1);
+        }}
+      />
     </Layout>
   );
 }
