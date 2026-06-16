@@ -13,6 +13,7 @@ import AdminRoute from "./components/AdminRoute";
 import Forbidden from "./pages/Forbidden";
 import NotFound from "./pages/NotFound";
 import ChangePassword from "./pages/ChangePassword";
+import Categories from "./pages/Categories";
 
 function App() {
   return (
@@ -82,6 +83,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/categories"
+            element={
+              <ProtectedRoute>
+                <Categories />
               </ProtectedRoute>
             }
           />

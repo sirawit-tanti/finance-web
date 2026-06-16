@@ -1,7 +1,7 @@
 import api from "./api";
 
-export async function getCategories() {
-  const response = await api.get("/categories");
+export async function getCategories(params = {}) {
+  const response = await api.get("/categories", { params });
 
   return response.data;
 }
@@ -19,7 +19,15 @@ export async function updateCategory(id, payload) {
 }
 
 export async function deleteCategory(id) {
-  const response = await api.put(`/categories/${id}`);
+  const response = await api.delete(`/categories/${id}`);
+
+  return response.data;
+}
+
+export async function exportCategories() {
+  const response = await api.get("/categories/export", {
+    responseType: "blob",
+  });
 
   return response.data;
 }

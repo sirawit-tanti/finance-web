@@ -3,14 +3,15 @@ import { logout } from "../services/authService";
 import { useTheme } from "./ThemeContext";
 import {
   LayoutDashboard,
-  ArrowLeftRight,
-  History,
-  User,
+  ReceiptText,
+  ClipboardList,
+  UserCircle,
   Users,
   LogOut,
   Moon,
   Sun,
   LockKeyhole,
+  Tags,
 } from "lucide-react";
 
 function Navbar() {
@@ -30,9 +31,10 @@ function Navbar() {
 
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-    { to: "/activity-logs", label: "Activity Logs", icon: History },
-    { to: "/profile", label: "Profile", icon: User },
+    { to: "/transactions", label: "Transactions", icon: ReceiptText },
+    { to: "/categories", label: "Categories", icon: Tags },
+    { to: "/activity-logs", label: "Activity Logs", icon: ClipboardList },
+    { to: "/profile", label: "Profile", icon: UserCircle },
     { to: "/change-password", label: "Change Password", icon: LockKeyhole },
   ];
 

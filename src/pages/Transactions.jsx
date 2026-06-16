@@ -53,7 +53,7 @@ function Transactions() {
   async function loadCategories() {
     try {
       const data = await getCategories();
-      setCategories(data);
+      setCategories(data.data);
     } catch (error) {
       console.log(error.response?.data);
     }
