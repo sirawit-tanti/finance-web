@@ -25,40 +25,43 @@ function Dashboard() {
   const [monthly, setMonthly] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [period, setPeriod] = useState("month");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboard();
   }, [period]);
 
   async function loadDashboard() {
+    setLoading(true);
+
     try {
       const data = await getDashboard({ period });
       const monthlyData = await getMonthlyDashboard({ period });
       const recentData = await getRecentTransactions({ period });
 
       setDashboard(data);
-      console.log(monthlyData);
       setMonthly(monthlyData);
       setRecentTransactions(recentData.data);
     } catch (error) {
       console.log(error.response?.data);
       toast.error("โหลด Dashboard ไม่สำเร็จ");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <Layout title="Dashboard" subtitle="Overview of your finances">
+        <div className="empty-state">Loading...</div>
+      </Layout>
+    );
   }
 
   if (!dashboard) {
     return (
       <Layout title="Dashboard" subtitle="Overview of your finances">
-        <div
-          style={{
-            color: "var(--text-muted)",
-            padding: "64px 0",
-            textAlign: "center",
-            fontSize: 13,
-          }}
-        >
-          Loading…
-        </div>
+        <div className="empty-state">No data found.</div>
       </Layout>
     );
   }
