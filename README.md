@@ -1,16 +1,89 @@
-# React + Vite
+# Personal Finance Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack personal finance management system built with Laravel and React.
 
-Currently, two official plugins are available:
+## Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Frontend:
+https://xxxxx.vercel.app
 
-## React Compiler
+Backend:
+https://xxxxx.up.railway.app
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- Authentication (Laravel Sanctum)
+- Dashboard Overview
+- Income & Expense Tracking
+- Categories Management
+- Activity Logs
+- CSV Export
+- Role-based Access Control
+- Admin User Management
+- Change Password
+- Pagination & Search
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Tech Stack
+
+### Frontend
+
+- React
+- Vite
+- Axios
+- React Router
+- Recharts
+- Lucide React
+
+### Backend
+
+- Laravel 12
+- Sanctum
+- MySQL
+- PHPUnit
+
+### Deployment
+
+- Vercel
+- Railway
+- GitHub Actions
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Transactions
+
+![Transactions](docs/screenshots/transactions.png)
+
+### Categories
+
+![Categories](docs/screenshots/categories.png)
+
+### Admin Users
+
+![Admin Users](docs/screenshots/admin-users.png)
+
+## Run Locally
+
+### Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+### Backend
+
+```bash
+composer install
+php artisan migrate
+php artisan serve
+```
+
+## Testing
+
+```bash
+php artisan test
+```
