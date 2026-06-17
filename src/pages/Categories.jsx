@@ -315,18 +315,17 @@ function Categories() {
             </table>
           </div>
         )}
-
-        <Pagination
-          meta={meta}
-          page={page}
-          perPage={perPage}
-          onPageChange={setPage}
-          onPerPageChange={(value) => {
-            setPerPage(value);
-            setPage(1);
-          }}
-        />
       </div>
+      <Pagination
+        meta={meta}
+        page={page}
+        perPage={perPage}
+        onPageChange={setPage}
+        onPerPageChange={(value) => {
+          setPerPage(value);
+          setPage(1);
+        }}
+      />
     </Layout>
   );
 }
