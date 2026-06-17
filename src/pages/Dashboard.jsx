@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "../utils/format";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import Skeleton from "../components/Skeleton";
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
@@ -47,7 +48,41 @@ function Dashboard() {
   if (loading) {
     return (
       <Layout title="Dashboard" subtitle="Overview of your finances">
-        <div className="empty-state">Loading...</div>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <Skeleton width="40%" />
+            <Skeleton height={32} width="70%" />
+          </div>
+
+          <div className="stat-card">
+            <Skeleton width="40%" />
+            <Skeleton height={32} width="70%" />
+          </div>
+
+          <div className="stat-card">
+            <Skeleton width="40%" />
+            <Skeleton height={32} width="70%" />
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 2fr",
+            gap: 14,
+            marginBottom: 14,
+          }}
+        >
+          <div className="chart-card">
+            <Skeleton height={20} width="50%" />
+            <Skeleton height={240} />
+          </div>
+
+          <div className="chart-card">
+            <Skeleton height={20} width="50%" />
+            <Skeleton height={240} />
+          </div>
+        </div>
       </Layout>
     );
   }
