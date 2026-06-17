@@ -5,10 +5,10 @@ A full-stack personal finance management system built with Laravel and React.
 ## Live Demo
 
 Frontend:
-https://xxxxx.vercel.app
+[https://finance-web-xxxxx.vercel.app/](https://finance-web-steel.vercel.app/)
 
 Backend:
-https://xxxxx.up.railway.app
+[finance-api-xxxxx.up.railway.app](https://finance-api-production-dc56.up.railway.app/api)
 
 ## Features
 
