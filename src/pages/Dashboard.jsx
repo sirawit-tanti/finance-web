@@ -1,10 +1,6 @@
 import Layout from "../components/Layout";
 import { useEffect, useState } from "react";
-import {
-  getDashboard,
-  getMonthlyDashboard,
-  getRecentTransactions,
-} from "../services/dashboardService";
+import { getDashboardOverview } from "../services/dashboardService";
 import {
   PieChart,
   Pie,
@@ -35,13 +31,11 @@ function Dashboard() {
     setLoading(true);
 
     try {
-      const data = await getDashboard({ period });
-      const monthlyData = await getMonthlyDashboard({ period });
-      const recentData = await getRecentTransactions({ period });
+      const data = await getDashboardOverview({ period });
 
-      setDashboard(data);
-      setMonthly(monthlyData);
-      setRecentTransactions(recentData.data);
+      setDashboard(data.summary);
+      setMonthly(data.monthly);
+      setRecentTransactions(data.recent_transactions);
     } catch (error) {
       console.log(error.response?.data);
       toast.error("โหลด Dashboard ไม่สำเร็จ");
